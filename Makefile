@@ -19,7 +19,8 @@ OBJ := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
 # Tillhörande .d-filer (dependency-filer skapade av -MMD)
 DEP := $(OBJ:.o=.d)
 # Namnet på den körbara filen
-BIN := main
+BIN := $(BUILD_DIR)/main
+
 
 # -------------------------------------------------------------------
 # >>> Mina tillägg för att bygga in Jansson direkt i projektet <<<
