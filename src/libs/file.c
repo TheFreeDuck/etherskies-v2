@@ -1,19 +1,27 @@
 #include "file.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-//TODO: use malloc instead of a stack string
-
 int write_cache(const char *city, const char *json) {
-  char filename[69];
+  const char *suffix = "_weather.json";
+  size_t len = strlen(city) + strlen(suffix) + 1;
 
-  snprintf(filename, sizeof(filename), "%s_weather.json", city);
+  char *filename = malloc(len);
+
+  if (!filename) {
+    return -1;
+  }
+
+  snprintf(filename, len, "%s%s", city, suffix);
 
   FILE *fptr = fopen(filename, "w");
+  free(filename);
   if (!fptr) {
     return -1;
   }
+
   if (fprintf(fptr, "%s", json) < 0) {
     fclose(fptr);
     return -1;
@@ -22,44 +30,66 @@ int write_cache(const char *city, const char *json) {
   return 0;
 }
 
+//will fill up output as much as it can
 int read_cache(const char *city, char *output, int size) {
-  char filename[69];
+  const char *suffix = "_weather.json";
+  size_t len = strlen(city) + strlen(suffix) + 1;
 
-  snprintf(filename, sizeof(filename), "%s_weather.json", city);
+  char *filename = malloc(len);
+
+  if (!filename) {
+    return -1;
+  }
+
+  snprintf(filename, len, "%s%s", city, suffix);
 
   FILE *fptr = fopen(filename, "r");
+  free(filename);
   if (!fptr) {
     return -1;
   }
 
-  if (fgets(output, size, fptr) == NULL) {
-    fclose(fptr);
+  size_t nread = fread(output, 1, size - 1, fptr);
+  output[nread] = '\0';
+
+  fclose(fptr);
+
+  if (nread == 0) {
     return -1;
   }
 
-  fclose(fptr);
   return 0;
 }
 
-int getFileModifiedTime(time_t *modTime) {
-  struct stat attr;
-  if (stat(CACHE_FILE, &attr) != 0) {
-    perror("stat");
+int getFileModifiedTime(const char *city, time_t *modTime) {
+  const char *suffix = "_weather.json";
+  size_t len = strlen(city) + strlen(suffix) + 1;
+
+  char *filename = malloc(len);
+
+  if (!filename) {
     return -1;
   }
+
+  snprintf(filename, len, "%s%s", city, suffix);
+
+  struct stat attr;
+  if (stat(filename, &attr) != 0) {
+    free(filename);
+    return -1;
+  }
+  free(filename);
   *modTime = attr.st_mtime;
   return 0;
 }
 
-bool time_for_new_data() {
+bool time_for_new_data(const char *city) {
   time_t current_time = time(NULL);
   time_t mod_time;
-  if (getFileModifiedTime(&mod_time) != 0) {
-    return false;
-  }
-  if (difftime(current_time, mod_time) >= MAX_TIME_SINCE_LAST_FETCH) {
+  if (getFileModifiedTime(city, &mod_time) != 0) {
+    // needs new data if file does not exist
     return true;
-  } else {
-    return false;
   }
+  return difftime(current_time, mod_time) >= MAX_TIME_SINCE_LAST_FETCH;
+
 }
