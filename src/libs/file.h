@@ -10,7 +10,7 @@
 void getFileCreationTime();
 bool time_for_new_data();
 
-int write_cache(const char *json);
-int read_cache(char *output, int size);
+int write_cache(const char *city,const char *json);
+int read_cache(const char *city, char *output, int size);
 
 #endif

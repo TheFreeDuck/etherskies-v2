@@ -1,9 +1,14 @@
 #include "file.h"
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
-int write_cache(const char *json) {
-  FILE *fptr = fopen(CACHE_FILE, "w");
+int write_cache(const char *city, const char *json) {
+  char filename[69];
+
+  snprintf(filename, sizeof(filename), "%s_weather.json", city);
+
+  FILE *fptr = fopen(filename, "w");
   if (!fptr) {
     return -1;
   }
@@ -15,8 +20,12 @@ int write_cache(const char *json) {
   return 0;
 }
 
-int read_cache(char *output, int size) {
-  FILE *fptr = fopen(CACHE_FILE, "r");
+int read_cache(const char *city, char *output, int size) {
+  char filename[69];
+
+  snprintf(filename, sizeof(filename), "%s_weather.json", city);
+
+  FILE *fptr = fopen(filename, "r");
   if (!fptr) {
     return -1;
   }
