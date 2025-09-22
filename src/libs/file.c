@@ -3,6 +3,8 @@
 #include <string.h>
 #include <time.h>
 
+//TODO: use malloc instead of a stack string
+
 int write_cache(const char *city, const char *json) {
   char filename[69];
 
