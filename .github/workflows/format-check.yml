@@ -1,0 +1,41 @@
+name: Format Check
+
+# Trigger workflow on push to main (or you can add PRs too)
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  clang_format_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install clang-format
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      # 3. Run formatting check
+      - name: Check formatting
+        run: |
+          echo "Checking code formatting with clang-format..."
+          FILES=$(find . -name '*.c' -o -name '*.h')
+          
+          # dry-run check
+          FORMATTING_FAILED=0
+          for f in $FILES; do
+            if ! clang-format --dry-run --Werror -style=file "$f"; then
+              echo "Formatting issue found in $f"
+              FORMATTING_FAILED=1
+            fi
+          done
+
+          if [ $FORMATTING_FAILED -eq 1 ]; then
+            echo "WARNING: Some files are not formatted correctly. Please run 'clang-format -i <file>' locally."
+            exit 0  # exit 0 so the push succeeds, workflow only warns
+          else
+            echo "All files are properly formatted ✅"
+          fi
