@@ -52,8 +52,6 @@ int read_cache(const char *city, char **output) {
   size_t nread = fread(filedata, 1, filesize, fptr);
   filedata[nread] = '\0';
 
-  *output = filedata;
-
   fclose(fptr);
 
   // file prbl empty
@@ -61,6 +59,8 @@ int read_cache(const char *city, char **output) {
     free(filedata);
     return -1;
   }
+
+  *output = filedata;
 
   return 0;
 }
