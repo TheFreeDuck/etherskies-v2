@@ -20,11 +20,12 @@ int write_cache(const char *city, const char *json) {
     fclose(fptr);
     return -1;
   }
+
   fclose(fptr);
   return 0;
 }
 
-// will fill up output as much as it can. should be changed
+// TODO: will fill up output as much as it can. should be changed
 int read_cache(const char *city, char *output, int size) {
   const char *suffix = "_weather.json";
   size_t len = strlen(city) + strlen(suffix) + 1;
@@ -42,7 +43,7 @@ int read_cache(const char *city, char *output, int size) {
 
   fclose(fptr);
 
-  //file prbl empty
+  // file prbl empty
   if (nread == 0) {
     return -1;
   }
@@ -63,15 +64,18 @@ int getFileModifiedTime(const char *city, time_t *modTime) {
   }
 
   *modTime = attr.st_mtime;
+
   return 0;
 }
 
 bool time_for_new_data(const char *city) {
   time_t current_time = time(NULL);
   time_t mod_time;
+
   if (getFileModifiedTime(city, &mod_time) != 0) {
     // needs new data if file does not exist
     return true;
   }
+
   return difftime(current_time, mod_time) >= MAX_TIME_SINCE_LAST_FETCH;
 }
