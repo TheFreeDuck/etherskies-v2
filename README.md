@@ -1,6 +1,7 @@
 # etherskies-v2
 
-Stockholm group 1 ChasAcademy SUVX25 Project
+Stockholm group 1 ChasAcademy SUVX25 Project.
+This project is under development and what the end product will be is unknown.
 
 ## Prerequisites
 
