@@ -8,17 +8,11 @@ int write_cache(const char *city, const char *json) {
   const char *suffix = "_weather.json";
   size_t len = strlen(city) + strlen(suffix) + 1;
 
-  char *filename = malloc(len);
-
-  if (!filename) {
-    return -1;
-  }
-
+  char filename[len];
   snprintf(filename, len, "%s%s", city, suffix);
 
   FILE *fptr = fopen(filename, "w");
-  free(filename);
-  if (!fptr) {
+  if (fptr == NULL) {
     return -1;
   }
 
@@ -30,22 +24,16 @@ int write_cache(const char *city, const char *json) {
   return 0;
 }
 
-//will fill up output as much as it can
+// will fill up output as much as it can. should be changed
 int read_cache(const char *city, char *output, int size) {
   const char *suffix = "_weather.json";
   size_t len = strlen(city) + strlen(suffix) + 1;
 
-  char *filename = malloc(len);
-
-  if (!filename) {
-    return -1;
-  }
-
+  char filename[len];
   snprintf(filename, len, "%s%s", city, suffix);
 
   FILE *fptr = fopen(filename, "r");
-  free(filename);
-  if (!fptr) {
+  if (fptr == NULL) {
     return -1;
   }
 
@@ -54,6 +42,7 @@ int read_cache(const char *city, char *output, int size) {
 
   fclose(fptr);
 
+  //file prbl empty
   if (nread == 0) {
     return -1;
   }
@@ -65,20 +54,14 @@ int getFileModifiedTime(const char *city, time_t *modTime) {
   const char *suffix = "_weather.json";
   size_t len = strlen(city) + strlen(suffix) + 1;
 
-  char *filename = malloc(len);
-
-  if (!filename) {
-    return -1;
-  }
-
+  char filename[len];
   snprintf(filename, len, "%s%s", city, suffix);
 
   struct stat attr;
   if (stat(filename, &attr) != 0) {
-    free(filename);
     return -1;
   }
-  free(filename);
+
   *modTime = attr.st_mtime;
   return 0;
 }
@@ -91,5 +74,4 @@ bool time_for_new_data(const char *city) {
     return true;
   }
   return difftime(current_time, mod_time) >= MAX_TIME_SINCE_LAST_FETCH;
-
 }
