@@ -5,14 +5,17 @@
 #include <string.h>
 #include <time.h>
 
+#define MAX_CITY_LEN 256
+#define FILENAME_SUFFIX "_weather.json"
+#define MAX_FILENAME_LEN (MAX_CITY_LEN + sizeof(FILENAME_SUFFIX))
+
 void create_cache_filename(const char* city, char* output, size_t size) {
-    const char* suffix = "_weather.json";
-    snprintf(output, size, "%s%s", city, suffix);
+    snprintf(output, size, "%s%s", city, FILENAME_SUFFIX);
 }
 
 // max city len 256
 int write_cache(const char* city, const char* json) {
-    char filename[256 + 14];
+    char filename[MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     FILE* fptr = fopen(filename, "w");
@@ -30,7 +33,7 @@ int write_cache(const char* city, const char* json) {
 }
 
 int read_cache(const char* city, char** output) {
-    char filename[256 + 14];
+    char filename[MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     struct stat st;
@@ -67,7 +70,7 @@ int read_cache(const char* city, char** output) {
 }
 
 int getFileModifiedTime(const char* city, time_t* modTime) {
-    char filename[256 + 14];
+    char filename[MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     struct stat attr;
