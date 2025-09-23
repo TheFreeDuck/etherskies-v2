@@ -1,21 +1,21 @@
-#include "file.h"
+#include "cache.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#define MAX_CITY_LEN 256
-#define FILENAME_SUFFIX "_weather.json"
-#define MAX_FILENAME_LEN (MAX_CITY_LEN + sizeof(FILENAME_SUFFIX))
+#define CACHE_MAX_CITY_LEN 256
+#define CACHE_FILENAME_SUFFIX "_weather.json"
+#define CACHE_MAX_FILENAME_LEN (CACHE_MAX_CITY_LEN + sizeof(CACHE_FILENAME_SUFFIX))
 
-void create_cache_filename(const char* city, char* output, size_t size) {
-    snprintf(output, size, "%s%s", city, FILENAME_SUFFIX);
+static void create_cache_filename(const char* city, char* output, size_t size) {
+    snprintf(output, size, "%s%s", city, CACHE_FILENAME_SUFFIX);
 }
 
 // max city len 256
-int write_cache(const char* city, const char* json) {
-    char filename[MAX_FILENAME_LEN];
+int cache_write(const char* city, const char* json) {
+    char filename[CACHE_MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     FILE* fptr = fopen(filename, "w");
@@ -32,8 +32,8 @@ int write_cache(const char* city, const char* json) {
     return 0;
 }
 
-int read_cache(const char* city, char** output) {
-    char filename[MAX_FILENAME_LEN];
+int cache_read(const char* city, char** output) {
+    char filename[CACHE_MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     struct stat st;
@@ -69,8 +69,8 @@ int read_cache(const char* city, char** output) {
     return 0;
 }
 
-int getFileModifiedTime(const char* city, time_t* modTime) {
-    char filename[MAX_FILENAME_LEN];
+static int get_file_modified_time(const char* city, time_t* modTime) {
+    char filename[CACHE_MAX_FILENAME_LEN];
     create_cache_filename(city, filename, sizeof(filename));
 
     struct stat attr;
@@ -83,14 +83,14 @@ int getFileModifiedTime(const char* city, time_t* modTime) {
     return 0;
 }
 
-bool time_for_new_data(const char* city) {
+bool cache_time_for_new_data(const char* city) {
     time_t current_time = time(NULL);
     time_t mod_time;
 
-    if (getFileModifiedTime(city, &mod_time) != 0) {
+    if (get_file_modified_time(city, &mod_time) != 0) {
         // needs new data if file does not exist
         return true;
     }
 
-    return difftime(current_time, mod_time) >= MAX_TIME_SINCE_LAST_FETCH;
+    return difftime(current_time, mod_time) >= CACHE_MAX_TIME_SINCE_LAST_FETCH;
 }
