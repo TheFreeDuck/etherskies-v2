@@ -10,8 +10,8 @@
 // 15 minutes in seconds
 #define MAX_TIME_SINCE_LAST_FETCH 900
 
-int write_cache(const char *city, const char *json);
-int read_cache(const char *city, char **output);
+int write_cache(const char* city, const char* json);
+int read_cache(const char* city, char** output);
 
 void getFileCreationTime();
 bool time_for_new_data();
