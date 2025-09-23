@@ -4,16 +4,15 @@
 #include <string.h>
 #include <time.h>
 
-void create_cache_filename(const char *city, char *output, size_t size){
+void create_cache_filename(const char *city, char *output, size_t size) {
   const char *suffix = "_weather.json";
   snprintf(output, size, "%s%s", city, suffix);
 }
 
-//max city len 256
+// max city len 256
 int write_cache(const char *city, const char *json) {
   char filename[256 + 14];
   create_cache_filename(city, filename, sizeof(filename));
-  
 
   FILE *fptr = fopen(filename, "w");
   if (fptr == NULL) {
@@ -29,23 +28,37 @@ int write_cache(const char *city, const char *json) {
   return 0;
 }
 
-// TODO: will fill up output as much as it can. should be changed
-int read_cache(const char *city, char *output, size_t size) {
+int read_cache(const char *city, char **output) {
   char filename[256 + 14];
   create_cache_filename(city, filename, sizeof(filename));
 
-  FILE *fptr = fopen(filename, "r");
+  struct stat st;
+  if (stat(filename, &st) != 0) {
+    return -1;
+  }
+  size_t filesize = st.st_size;
+
+  FILE *fptr = fopen(filename, "rb");
   if (fptr == NULL) {
     return -1;
   }
 
-  size_t nread = fread(output, 1, size - 1, fptr);
-  output[nread] = '\0';
+  char *filedata = malloc(filesize + 1);
+  if (!filedata) {
+    fclose(fptr);
+    return -1;
+  }
+
+  size_t nread = fread(filedata, 1, filesize, fptr);
+  filedata[nread] = '\0';
+
+  *output = filedata;
 
   fclose(fptr);
 
   // file prbl empty
   if (nread == 0) {
+    free(filedata);
     return -1;
   }
 
