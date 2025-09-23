@@ -4,12 +4,16 @@
 #include <string.h>
 #include <time.h>
 
-int write_cache(const char *city, const char *json) {
+void create_cache_filename(const char *city, char *output, size_t size){
   const char *suffix = "_weather.json";
-  size_t len = strlen(city) + strlen(suffix) + 1;
+  snprintf(output, size, "%s%s", city, suffix);
+}
 
-  char filename[len];
-  snprintf(filename, len, "%s%s", city, suffix);
+//max city len 256
+int write_cache(const char *city, const char *json) {
+  char filename[256 + 14];
+  create_cache_filename(city, filename, sizeof(filename));
+  
 
   FILE *fptr = fopen(filename, "w");
   if (fptr == NULL) {
@@ -26,12 +30,9 @@ int write_cache(const char *city, const char *json) {
 }
 
 // TODO: will fill up output as much as it can. should be changed
-int read_cache(const char *city, char *output, int size) {
-  const char *suffix = "_weather.json";
-  size_t len = strlen(city) + strlen(suffix) + 1;
-
-  char filename[len];
-  snprintf(filename, len, "%s%s", city, suffix);
+int read_cache(const char *city, char *output, size_t size) {
+  char filename[256 + 14];
+  create_cache_filename(city, filename, sizeof(filename));
 
   FILE *fptr = fopen(filename, "r");
   if (fptr == NULL) {
@@ -52,11 +53,8 @@ int read_cache(const char *city, char *output, int size) {
 }
 
 int getFileModifiedTime(const char *city, time_t *modTime) {
-  const char *suffix = "_weather.json";
-  size_t len = strlen(city) + strlen(suffix) + 1;
-
-  char filename[len];
-  snprintf(filename, len, "%s%s", city, suffix);
+  char filename[256 + 14];
+  create_cache_filename(city, filename, sizeof(filename));
 
   struct stat attr;
   if (stat(filename, &attr) != 0) {
