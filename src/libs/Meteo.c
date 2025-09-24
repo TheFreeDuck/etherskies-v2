@@ -21,7 +21,7 @@ int Meteo_getTemperature(Meteo* meteo, float lat, float lon,
     char url[256];
     snprintf(
         url, sizeof(url),
-        "%s/v1/forecast?latitude=%2.2f&longitude=%2.2f&hourly=temperature_2m",
+        "%s/v1/forecast?latitude=%2.2f&longitude=%2.2f&current=temperature_2m",
         meteo->api_url, lat, lon);
 
     int result = HTTP_get(&http, url);
