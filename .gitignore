@@ -1,5 +1,5 @@
 build/
-lib/
+lib/jansson-2.13.1
 weather_cache.json
 # Prerequisites
 *.d
