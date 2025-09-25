@@ -1,9 +1,8 @@
 # etherskies-v2
 
 Stockholm group 1 ChasAcademy SUVX25 Project.
-This project is under development and what the end product will be is unknown.
+This project is currently under development and the final product is not yet defined.
 
-## Prerequisites
+## Getting Started
 
-To compile this you need to symmlink a compiled **jansson** library to lib/jansson-2.13.1 in the project
-It can be found here: https://github.com/TheFreeDuck/etherskies-v2/tree/jansson
+To compile the project, clone the **libs** branch into the same parent directory as this repository.
