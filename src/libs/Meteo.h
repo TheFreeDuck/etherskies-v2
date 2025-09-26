@@ -1,6 +1,9 @@
 #ifndef __Meteo_h__
 #define __Meteo_h__
 
+#include <string.h> 
+#include <stdio.h>
+
 typedef struct {
     const char* api_url;
 

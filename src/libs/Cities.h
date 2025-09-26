@@ -1,35 +1,32 @@
-#ifndef __CITIES_H__
-#define __CITIES_H__
 
-#include "Meteo.h"
+#ifndef _CITIES_H
+#define _CITIES_H
 
-typedef struct City City;
 
-typedef struct City {
-    City* prev;
-    City* next;
+#include "utils/LinkedList.h"
 
-    char* name;
-    float latitude;
-    float longitude;
-};
+typedef struct Cities Cities;
 
-typedef struct {
-    City* head;
-    City* tail;
+#include "City.h"
 
-    Meteo meteo;
-
+typedef struct Cities
+{
+	LinkedList list;
+	
 } Cities;
 
-int Cities_init(Cities* c);
 
-void Cities_print(Cities* _Cities);
-int  Cities_add(Cities* _Cities, char* _Name, float _Latitude, float _Longitude,
-                City** _City);
-int  Cities_get(Cities* _Cities, const char* _Name, City** _CityPtr);
-void Cities_remove(Cities* _Cities, City* _City);
+int Cities_Init(Cities** _CitiesPtr);
 
-void Cities_dispose(Cities* c);
 
-#endif // __CITIES_H__
+void Cities_AddFromStringList(Cities* _Cities, const char* _StringList);
+int Cities_Create(Cities* _Cities, const char* _Name, const char* _Latitude, const char* _Longitude, City** _City);
+int Cities_GetName(Cities* _Cities, const char* _Name, City** _CityPtr);
+int Cities_GetIndex(Cities* _Cities, int _Index, City** _CityPtr);
+void Cities_Destroy(Cities* _Cities, City** _CityPtr);
+
+void Cities_Print(Cities* _Cities);
+
+void Cities_Dispose(Cities** _CitiesPtr);
+
+#endif // _CITIES_H

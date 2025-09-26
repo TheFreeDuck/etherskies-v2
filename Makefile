@@ -6,7 +6,8 @@ SRC_DIR := src
 # Katalog där objektfilerna ska placeras
 BUILD_DIR := build
 # Flaggor: standard, varningar, optimering + auto-dep för headers
-CFLAGS := -std=c11 -Wall -Wextra -MMD -MP -Ilibs
+CFLAGS := -std=c11 -Wall -Wextra -MMD -MP -Ilibs -Iincludes -Isrc/libs
+
 # Länkarflaggor
 LDFLAGS := -flto -Wl,--gc-sections
 # Bibliotek att länka mot

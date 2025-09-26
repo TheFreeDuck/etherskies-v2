@@ -1,13 +1,10 @@
 #include "Cities.h"
 
-#include "HTTP.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-//-------------Internal function definitions----------------
 
 const char* Cities_list = "Stockholm:59.3293:18.0686\n"
                           "Göteborg:57.7089:11.9746\n"
@@ -26,39 +23,30 @@ const char* Cities_list = "Stockholm:59.3293:18.0686\n"
                           "Luleå:65.5848:22.1567\n"
                           "Kiruna:67.8558:20.2253\n";
 
-void Cities_parse_list(Cities* _Cities, const char* list);
+int Cities_Init(Cities** _CitiesPtr) {
+    if (_CitiesPtr == NULL)
+        return -1;
 
-//..--------------------------------------------------------
+    Cities* _Cities = (Cities*)malloc(sizeof(Cities));
+    if (_Cities == NULL)
+        return -2;
 
-int Cities_init(Cities* _Cities) {
-    memset(_Cities, 0, sizeof(Cities));
+    LinkedList_Initialize(&_Cities->list);
 
-    Cities_parse_list(_Cities, Cities_list);
+    create_folder("cities");
 
-    Cities_print(_Cities);
+    // Läsa alla filer som finns i cities mappen
 
-    Meteo_init(&_Cities->meteo, "https://api.open-Meteo.com");
+    Cities_AddFromStringList(_Cities, Cities_list);
 
+    Cities_AddFromStringList(_Cities, Cities_list);
+
+    *(_CitiesPtr) = _Cities;
     return 0;
 }
 
-void Cities_print(Cities* _Cities) {
-    City* current = _Cities->head;
-    if (current == NULL) {
-        printf("No Cities to print\n");
-        return;
-    }
-
-    do {
-        printf("City: %s, Latitude: %.4f, Longitude: %.4f\n", current->name,
-               current->latitude, current->longitude);
-        current = current->next;
-
-    } while (current != NULL);
-}
-
-void Cities_parse_list(Cities* _Cities, const char* list) {
-    char* list_copy = strdup(list);
+void Cities_AddFromStringList(Cities* _Cities, const char* _StringList) {
+    char* list_copy = strdup(_StringList);
     if (list_copy == NULL) {
         printf("Failed to allocate memory for list copy\n");
         return;
@@ -89,7 +77,7 @@ void Cities_parse_list(Cities* _Cities, const char* list) {
                 // printf("City: <%s>, Latitude: <%s>, Longitude: <%s>\n", name,
                 // lat_str, lon_str);
 
-                Cities_add(_Cities, name, atof(lat_str), atof(lon_str), NULL);
+                Cities_Create(_Cities, name, lat_str, lon_str, NULL);
 
                 name    = NULL;
                 lat_str = NULL;
@@ -101,32 +89,34 @@ void Cities_parse_list(Cities* _Cities, const char* list) {
 
     } while (*(ptr) != '\0');
 
-    printf("Finished parsing City list\n");
+    free(list_copy);
 }
 
-int Cities_add(Cities* _Cities, char* _Name, float _Latitude, float _Longitude,
-               City** _City) {
-    City* new_City = (City*)malloc(sizeof(City));
-    if (new_City == NULL) {
-        printf("Failed to allocate memory for new City\n");
+int Cities_Create(Cities* _Cities, const char* _Name, const char* _Latitude,
+                  const char* _Longitude, City** _City) {
+    if (_Cities == NULL || _Name == NULL)
         return -1;
+
+    City* new_City = NULL;
+
+    if (Cities_GetName(_Cities, _Name, &new_City) == 0) {
+        printf("City with name '%s' already exists!\n", _Name);
+
+        if (_City != NULL)
+            *(_City) = new_City;
+
+        return 1;
     }
 
-    new_City->name      = _Name;
-    new_City->latitude  = _Latitude;
-    new_City->longitude = _Longitude;
+    int   result   = 0;
 
-    new_City->prev = NULL;
-    new_City->next = NULL;
-
-    if (_Cities->tail == NULL) {
-        _Cities->head = new_City;
-        _Cities->tail = new_City;
-    } else {
-        new_City->prev      = _Cities->tail;
-        _Cities->tail->next = new_City;
-        _Cities->tail       = new_City;
+    result = City_Init(_Name, _Latitude, _Longitude, &new_City);
+    if (result != 0) {
+        printf("Failed to initialize City struct! Errorcode: %i\n", result);
+        return -3;
     }
+
+    LinkedList_Push(&_Cities->list, new_City);
 
     if (_City != NULL)
         *(_City) = new_City;
@@ -134,53 +124,73 @@ int Cities_add(Cities* _Cities, char* _Name, float _Latitude, float _Longitude,
     return 0;
 }
 
-int Cities_get(Cities* _Cities, const char* _Name, City** _CityPtr) {
-    City* current = _Cities->head;
-    if (current == NULL)
+int Cities_GetName(Cities* _Cities, const char* _Name, City** _CityPtr) {
+    if (_Cities == NULL || _Name == NULL)
         return -1;
 
-    do {
-        if (strcmp(current->name, _Name) == 0) {
+    City* city = NULL;
+    LinkedList_ForEach(&_Cities->list, &city) {
+        if (strcmp(city->name, _Name) == 0) {
             if (_CityPtr != NULL)
-                *(_CityPtr) = current;
+                *(_CityPtr) = city;
 
             return 0;
         }
-
-        current = current->next;
-
-    } while (current != NULL);
-
-    return -1;
-}
-
-void Cities_remove(Cities* _Cities, City* _City) {
-    if (_City->next == NULL && _City->prev == NULL) // Jag är ensam
-    {
-        _Cities->head = NULL;
-        _Cities->tail = NULL;
-    } else if (_City->prev == NULL) // Jag är först
-    {
-        _Cities->head     = _City->next;
-        _City->next->prev = NULL;
-    } else if (_City->next == NULL) // Jag är sist
-    {
-        _Cities->tail     = _City->prev;
-        _City->prev->next = NULL;
-    } else // Jag är i mitten
-    {
-        _City->prev->next = _City->next;
-        _City->next->prev = _City->prev;
     }
 
-    // Alla utfall är hanterade, frigör minnet
-
-    free(_City);
+    return -2;
 }
 
-int Cities_getTemperature(Cities* _Cities, City* _City, float* _Temperature) {
-    return Meteo_getTemperature(&_Cities->meteo, _City->latitude,
-                                _City->longitude, _Temperature);
+int Cities_GetIndex(Cities* _Cities, int _Index, City** _CityPtr) {
+    if (_Cities == NULL || _CityPtr == NULL)
+        return -1;
+
+    if (_Index < 0 || _Index >= _Cities->list.length)
+        return -2;
+
+    City* city = (City*)LinkedList_Get(&_Cities->list, _Index);
+    if (city == NULL)
+        return -3;
+
+    *(_CityPtr) = city;
+
+    return 0;
 }
 
-void Cities_dispose(Cities* c) { c++; }
+void Cities_Destroy(Cities* _Cities, City** _CityPtr) {
+    if (_Cities == NULL || _CityPtr == NULL || *(_CityPtr) == NULL)
+        return;
+
+    City* city = *(_CityPtr);
+    LinkedList_Remove(&_Cities->list, city);
+    City_Dispose(&city);
+
+    *(_CityPtr) = NULL;
+}
+
+void Cities_Print(Cities* _Cities) {
+    if (_Cities == NULL)
+        return;
+
+    int   index = 1;
+    City* city  = NULL;
+    LinkedList_ForEach(&_Cities->list, &city) {
+        printf("[%i] - %s\n", index++, city->name);
+    }
+}
+
+void Cities_Dispose(Cities** _CitiesPtr) {
+    if (_CitiesPtr == NULL || *(_CitiesPtr) == NULL)
+        return;
+
+    Cities* _Cities = *(_CitiesPtr);
+
+    City* city = NULL;
+    LinkedList_ForEach(&_Cities->list, &city) { City_Dispose(&city); }
+
+    LinkedList_Dispose(&_Cities->list);
+
+    free(_Cities);
+
+    *(_CitiesPtr) = NULL;
+}

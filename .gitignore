@@ -2,6 +2,8 @@ build/
 lib/jansson-2.13.1
 weather_cache.json
 .cache/
+cache/
+cities/
 compile_commands.json
 .
 # Prerequisites

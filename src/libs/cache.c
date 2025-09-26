@@ -9,6 +9,14 @@
 #define CACHE_FILENAME_SUFFIX "_weather.json"
 #define CACHE_MAX_FILENAME_LEN (CACHE_MAX_CITY_LEN + sizeof(CACHE_FILENAME_SUFFIX))
 
+void make_directory(const char* name) {
+   #ifdef __linux__
+       mkdir(name, 777); 
+   #else
+       _mkdir(name);
+   #endif
+}
+
 static void create_cache_filename(const char* city, char* output, size_t size) {
     snprintf(output, size, "%s%s", city, CACHE_FILENAME_SUFFIX);
 }
@@ -94,3 +102,5 @@ bool cache_time_for_new_data(const char* city) {
 
     return difftime(current_time, mod_time) >= CACHE_MAX_TIME_SINCE_LAST_FETCH;
 }
+
+
